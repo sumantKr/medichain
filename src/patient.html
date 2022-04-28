@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+
+    <title>MediChain</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet" />
+    <!-- <script src="js/bundle.js"></script> -->
+
+    <!-- Custom CSS -->
+    <style>
+      .navbar {
+        margin-bottom: 70px;
+      }
+      .panel-heading {
+        margin-bottom: 20px;
+      }
+      .panel {
+        margin-bottom: 60px;
+      }
+      /* .publicKeyDoctor{
+        display: none;
+    } */
+      .well > h3 {
+        margin: 10px auto;
+      }
+      .checkbox label:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+
+      .checkbox .cr {
+        position: relative;
+        display: inline-block;
+        border: 1px solid #a9a9a9;
+        border-radius: 0.25em;
+        width: 1.3em;
+        height: 1.3em;
+        margin-right: 0.5em;
+      }
+
+      .checkbox .cr .cr-icon {
+        position: absolute;
+        font-size: 0.8em;
+        line-height: 0;
+        top: 50%;
+        left: 15%;
+      }
+
+      .checkbox label input[type="checkbox"] {
+        display: none;
+      }
+
+      .checkbox label input[type="checkbox"] + .cr > .cr-icon {
+        opacity: 0;
+      }
+
+      .checkbox label input[type="checkbox"]:checked + .cr > .cr-icon {
+        opacity: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button
+            type="button"
+            class="navbar-toggle"
+            data-toggle="collapse"
+            data-target="#bs-example-navbar-collapse-1"
+          >
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">MediChain</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="./index.html">Logout</a>
+            </li>
+          </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+      </div>
+      <!-- /.container -->
+    </nav>
+
+    <div class="container">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="text-center">Personal Information</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-sm-offset-1 col-sm-10">
+              <table class="table">
+                <tr>
+                  <th>Name:</th>
+                  <td id="name"></td>
+                </tr>
+                <tr>
+                  <th>Age:</th>
+                  <td id="age"></td>
+                </tr>
+              </table>
+
+              <div class="text-center">
+                <h5>
+                  Click to show your records
+                </h5>
+                <button
+                  type="submit"
+                  class="btn btn-info btn-lg"
+                  onclick="showRecords(this)"
+                >
+                  View medical records
+                </button>
+              </div>
+              <pre id="records" style="margin-top: 20px"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="text-center">Share your Medical Record</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="alert alert-info col-sm-8 col-sm-offset-2">
+              <strong>Info!</strong> The doctor already has access to your
+              records. Revoke access or wait for time duration to end to
+              continue.
+            </div>
+          </div>
+
+          <form class="form-horizontal" action="/action_page.php">
+            <div class="form-group">
+              <label for="permitDoctorList" class="control-label col-sm-2"
+                >Doctor:</label
+              >
+              <div class="col-sm-8">
+                <select class="form-control" id="permitDoctorList">
+                  <option selected disabled>-- Please Select --</option>
+                </select>
+              </div>
+            </div>
+          </form>
+          <div class="text-center">
+            <button onclick="giveAccess()" class="btn btn-primary btn-lg">
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="text-center">Current EMR access holders</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="alert alert-danger col-sm-8 col-sm-offset-2">
+              <strong>Notice!</strong> The access could not be revoked. Please
+              retry or contact admin.
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-offset-1 col-sm-10">
+              <table id="accessDoc" class="table table-hover">
+                <tr>
+                  <th>Doctor</th>
+                  <th class="publicKeyDoctor">Public Key</th>
+                  <th>Revoke access</th>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="./js/jquery.js"></script>
+    <script src="./js/bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.0-rc.0/web3.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/ipfs/0.58.7-rc.1/index.min.js"
+      integrity="sha512-IuczYwHkTdEeLx6wHI3nUndaHHoXyHheIcwR6CK5gul/kViW+3jxc+BY8UqbhTQP3nQFY4AGPgemWRTFiFgIvQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/index.js"></script>
+
+    <script>
+      let url_string = window.location.href;
+      let url = new URL(url_string);
+      console.log(url);
+
+      let toggleRecordsButton = 0;
+      let recordHash = "";
+      let key;
+      window.onload = async () => {
+        await loadWeb3();
+        $("#records").hide();
+        $(".alert-info").hide();
+        $(".alert-danger").hide();
+        console.log(getcontractInstanceAndAccountAddress());
+        key = accountAddress;
+        console.log("pk:", key);
+
+        console.log(key);
+
+        let a = "";
+        let b = 0;
+        let ailments = [];
+        let insurerName = "";
+
+        // print patient details and insurer details (if exists). If insurer does not exist show the buy insurance panel
+        console.log("Getting Patient Data");
+        await contractInstance.methods
+          .getPatient(key)
+          .call()
+          .then((result, error) => {
+            console.log("Patient Data Result:" + result);
+            if (!error) {
+              console.log(result);
+              a = result[0];
+              b = result[1];
+              ailments = result[2];
+              recordHash = result[4];
+              $("#name").html(a);
+              $("#age").html(b);
+              $("#recordsHash").html(recordHash);
+            } else console.error(error);
+          });
+
+        // print out the doctors to share emr
+        let DoctorList = 0;
+        console.log("Getting Doctor List");
+        await contractInstance.methods
+          .getDoctorList()
+          .call()
+          .then((result, error) => {
+            if (!error) {
+              DoctorList = result;
+              console.log(DoctorList);
+              for (let i = 0; i < DoctorList.length; i++) {
+                contractInstance.methods
+                  .getDoctor(DoctorList[i])
+                  .call()
+                  .then(function (result, error) {
+                    console.log(result);
+                    let list = document.getElementById("permitDoctorList");
+                    if (!error) {
+                      const a = result[0];
+                      const b = result[1];
+                      let option = document.createElement("option");
+                      option.text = a;
+                      list.add(option);
+                      // console.log(a);
+                    } else console.error(error);
+                  });
+              }
+            } else console.error(error);
+          });
+
+        // print out the doctors who have access
+        let doctorAddressList = 0;
+        await contractInstance.methods
+          .getAccessedDoctorListForPatient(key)
+          .call()
+          .then((result, error) => {
+            if (!error) {
+              doctorAddressList = result;
+              console.log("result", result);
+              doctorAddressList.forEach(async function (doctorAddress, index) {
+                await contractInstance.methods
+                  .getDoctor(doctorAddress)
+                  .call()
+                  .then(function (result, error) {
+                    let table = document.getElementById("accessDoc");
+                    if (!error) {
+                      const a = result[0];
+                      const b = result[1];
+                      console.log(a);
+                      let row = table.insertRow(index + 1);
+                      let cell1 = row.insertCell(0);
+                      let cell2 = row.insertCell(1);
+                      let cell3 = row.insertCell(2);
+                      cell2.className = "publicKeyDoctor";
+                      cell1.innerHTML = a;
+                      cell2.innerHTML = doctorAddress;
+                      cell3.innerHTML =
+                        '<button onclick="revokeAccess(this)" class="btn btn-danger">Revoke access</button>';
+                      console.log(result);
+                    } else console.error(error);
+                  });
+              });
+            } else console.error(error);
+          });
+      };
+      async function showRecords(element) {
+        console.log("--------------");
+        if (toggleRecordsButton % 2 == 0) {
+          console.log(recordHash);
+          const node = await Ipfs.create()
+          const stream = node.cat(recordHash);
+          let data = "";
+          for await (const chunk of stream) {
+            data += chunk.toString();
+          }
+          console.log(data);
+          $("#records").html(data);
+          $("#records").show();
+
+          console.log("homeee");
+          toggleRecordsButton += 1;
+
+          element.innerHTML = "Hide Medical Records";
+          element.className = "btn btn-info btn-lg";
+        } else {
+          $("#records").hide();
+          toggleRecordsButton -= 1;
+          element.innerHTML = "View Medical Records";
+          element.className = "btn btn-info btn-lg";
+        }
+      }
+
+      async function giveAccess() {
+        let list = document.getElementById("permitDoctorList");
+        console.log(list);
+        let index = list.selectedIndex;
+        console.log("index", index);
+        let DoctorList;
+        await contractInstance.methods
+          .getDoctorList()
+          .call()
+          .then(function (result, error) {
+            if (!error) {
+              console.log("resultssss", result);
+              DoctorList = result;
+              let doctorToBeAdded = DoctorList[index - 1];
+              console.log("dtba", doctorToBeAdded);
+              contractInstance.methods
+                .permitAccess(doctorToBeAdded)
+                .send(
+                  { from: key, value: web3.utils.toWei("1", "ether") },
+                  function (result, error) {
+                    if (!error) {
+                      let table = document.getElementById("accessDoc");
+                      noRows = table.rows.length;
+                      let row = table.insertRow(noRows);
+                      let cell1 = row.insertCell(0);
+                      let cell2 = row.insertCell(1);
+                      let cell3 = row.insertCell(2);
+
+                      cell2.className = "publicKeyDoctor";
+                      cell1.innerHTML = $("#permitDoctorList").val();
+                      cell2.innerHTML = doctorToBeAdded;
+                      cell3.innerHTML =
+                        '<button onclick="revokeAccess(this)" class="btn btn-danger">Revoke access</button>';
+                    } else {
+                      $(".alert-info").show();
+                      console.log(error);
+                    }
+                  }
+                );
+            } else console.log(error);
+          });
+      }
+      async function revokeAccess(element) {
+        let rowNo = element.parentNode.parentNode.rowIndex;
+        let Row = element.parentNode.parentNode;
+        let Cells = Row.getElementsByTagName("td");
+        let docKey = Row.cells[1].firstChild.nodeValue;
+        console.log("key", key);
+        console.log("dockey", docKey);
+        try {
+          await contractInstance.methods
+            .revokeAccess(docKey)
+            .send({
+              from: key,
+              gas: 100000,
+              gasLimit: 100000,
+              value: web3.utils.toWei("1", "ether"),
+            })
+            .then(function (result, error) {
+              if (!error) {
+                console.log("result", result);
+                document.getElementById("accessDoc").deleteRow(rowNo);
+              } else {
+                console.log("error", error);
+                $(".alert-danger").show();
+                console.log(error);
+              }
+            });
+        } catch (e) {
+          console.log("-------");
+          console.log(e);
+        }
+      }
+    </script>
+  </body>
+</html>

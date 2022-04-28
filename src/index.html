@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+
+    <title>Medichain</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+    <script src="js/bundle.js"></script>
+
+    <!-- Custom CSS -->
+    <style>
+      .panel-heading {
+        margin-bottom: 20px;
+      }
+      .navbar {
+        margin-bottom: 70px;
+      }
+      #total-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 80%;
+        margin: 20vh auto 0 auto;
+      }
+      #includedContent {
+        height: 100%;
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-items: center;
+        text-align: end;
+        /* align-items: flex-end; */
+      }
+      #includedContent h1 {
+        font-size: 60px;
+      }
+      #login-container {
+        width: 40%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button
+            type="button"
+            class="navbar-toggle"
+            data-toggle="collapse"
+            data-target="#bs-example-navbar-collapse-1"
+          >
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">MediChain</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav navbar-right">
+            <li class="active">
+              <a href="./index.html">Login</a>
+            </li>
+            <li>
+              <a href="./register.html">Register</a>
+            </li>
+          </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+      </div>
+      <!-- /.container -->
+    </nav>
+    <section id="total-content">
+      <div id="includedContent">
+        <h1>Medichain</h1>
+        <h3>Decentralized Medical Record Storage Solution</h3>
+      </div>
+      <!-- Page Content -->
+      <div class="container" id="login-container">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="text-center">Welcome to MediChain</h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div
+                class="alert alert-warning col-sm-8 col-sm-offset-2"
+                style="display: none"
+              >
+                <strong>Warning!</strong> Unregistered user. Click
+                <a href="./register.html">here</a> to register.
+              </div>
+            </div>
+
+            <form class="form-horizontal" name="loginForm">
+              <div class="panel-heading">
+                <h5 class="text-center">
+                  Login is Linked to your Metamask Account
+                </h5>
+              </div>
+              <div class="form-group"></div>
+            </form>
+            <div class="text-center">
+              <button
+                class="btn btn-primary btn-lg"
+                id="login-button"
+                onclick="login()"
+              >
+                Login
+              </button>
+            </div>
+          </div>
+          <div class="panel-footer"></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- jQuery Version 1.11.1 -->
+    <script src="./js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="./js/bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.0-rc.0/web3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ipfs/0.58.7-rc.1/index.min.js" integrity="sha512-IuczYwHkTdEeLx6wHI3nUndaHHoXyHheIcwR6CK5gul/kViW+3jxc+BY8UqbhTQP3nQFY4AGPgemWRTFiFgIvQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/index.js"></script>
+    <script>
+      async function login() {
+        console.log("index");
+        $(".alert-warning").hide();
+        let{contractInstance,accountAddress}=getcontractInstanceAndAccountAddress();
+        let publicKey=accountAddress;
+        console.log('pk:',publicKey);
+        console.log(contractInstance);
+        await contractInstance.methods
+          .getPatientList()
+          .call()
+          .then((result, error) => {
+            if (!error) {
+              var PatientList = result;
+              console.log('patientList',PatientList);
+              for (var i = 0; i < PatientList.length; i++) {
+                if (publicKey.toLowerCase() === PatientList[i].toLowerCase()) {
+                  location.href = "./patient.html?key=" + publicKey;
+                }
+              }
+            } else {
+              console.log(error);
+              console.log("Invalid User!");
+              $(".alert-warning").show();
+            }
+          });
+
+        await contractInstance.methods
+          .getDoctorList()
+          .call()
+          .then((result, error) => {
+            if (!error) {
+              var DoctorList = result;
+              console.log('doctorList',DoctorList)
+              for (var i = 0; i < DoctorList.length; i++) {
+                if (publicKey.toLowerCase() == DoctorList[i].toLowerCase()) {
+                  location.href = "./doctor.html?key=" + publicKey;
+                }
+              }
+            } else {
+              console.log(error);
+              $(".alert-warning").show();
+            }
+          });
+          $(".alert-warning").show();
+    
+      }
+
+    </script>
+  </body>
+</html>
